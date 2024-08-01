@@ -1,7 +1,7 @@
 #1)Go to directory and load external variables + functions
 cd(@__DIR__);#moves julia terminal to directory where this file is.  This directory should have auxFunctions+SrF(or whatever)Variables files as well
 include("SrFVariables.jl") #change this to whatever molecule you care about
-include("auxFunctionsFromClusterFixDecayTerm.jl");#supplementary functions
+include("auxFunctions.jl");#supplementary functions
 
 #2) User choices with respect to saving output files
 saveInRealUnits = 1;#if 1, save vel+accel in m/s, mm/ms^2.  If 0, save in normalized units (vel= v/(gam/k)), (force=1e-3*hbar*k*gam)
