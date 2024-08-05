@@ -8,7 +8,7 @@ colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
     [0.6;0.6;0.3],[0.6;0.3;0.6],[0.3;0.6;0.6],[0.4;0.4;0.8],[0.4;0.8;0.4],[0.8;0.4;0.4],[0.5;0.5;0.5],[0.9;0.2;0.1],...
     [0.2;0.4;0.7],[0.4;0.4;0.0],[0.0;0.4;0.2],[0.2;0.0;0.4],[0.0;0.0;0.0],[0.8;0.8;0.8]];
 
-dataFolder = 'saveData/SrFRedMOTNormalValuesbFieldSettingThreeDBGradGPerCM12.5ForceThreeDNumLasers5Date20240731_1745';
+dataFolder = 'saveData/SrFRedMOTNormalValuesbFieldSettingThreeDBGradGPerCM9.0ForceThreeDNumLasers5Date20240801_1614';
 
 % pos = {'0.5','1.0','1.5','2.0','2.5','3.0'};
 pos = {'0.5','1.5','3.0','4.5','6.0','7.5'};
