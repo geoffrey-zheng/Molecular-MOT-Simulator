@@ -1,3 +1,6 @@
+#0) Specify whether running on Macbook or Windows desktop
+computer_type = 1 #0 for desktop, 1 for Macbook
+
 #1)Go to directory and load external variables + functions
 cd(@__DIR__);#moves julia terminal to directory where this file is.  This directory should have auxFunctions+SrF(or whatever)Variables files as well
 include("SrFVariables.jl") #change this to whatever molecule you care about
@@ -367,11 +370,14 @@ else
     bString="BGradGPerCM"
 end
 if saveData==1
-    folderString = string(@__DIR__,"\\saveData\\",saveDataFolderTag,"bFieldSetting",bFieldSetting,bString, bGradReal,"Force",forceProfile,"NumLasers", length(s0),"Date",Dates.format(now(),"yyyymmdd_HHMM"))
-    mkpath(folderString)
+    if computer_type==0
+        folderString = string(@__DIR__,"\\saveData\\",saveDataFolderTag,"bFieldSetting",bFieldSetting,bString, bGradReal,"Force",forceProfile,"NumLasers", length(s0),"Date",Dates.format(now(),"yyyymmdd_HHMM"))
+        mkpath(folderString)
+    else
+        folderString = string(@__DIR__,"/saveData/",saveDataFolderTag,"bFieldSetting",bFieldSetting,bString, bGradReal,"Force",forceProfile,"NumLasers", length(s0),"Date",Dates.format(now(),"yyyymmdd_HHMM"))
+        mkpath(folderString)
+    end
 end
-
-
 
 #OK, that's the setup, now for actually obtaining some acceleration curves via our OBE solver (note: the bulk of the work is 'under the hood' in auxFunctions)
 
@@ -502,30 +508,53 @@ for l = 1:length(displacementsInMM)
             currLongSpeedSaveVals = currLongSpeed.*(velFactor*saveInRealUnits+1*(1-saveInRealUnits));
         end
         if saveData==1
-            open(string(folderString,"\\forceVsSpeedDisplacement",displacementsInMM[l],"MM",runType,".dat"),"a") do io
-                if addHeaders==1 && k==1
-                    if forceProfile=="TwoD"
-                        writedlm(io,[headers ; hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,fill(currLongSpeedSaveVals,length(userSpeeds)),forceVsLongAvgSaveVals,forceVsLongUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg,pExcVsSpeedAvg)]);
-                    else
-                        writedlm(io,[headers ; hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg, pExcVsSpeedAvg)]);
+            if computer_type==0
+                open(string(folderString,"\\forceVsSpeedDisplacement",displacementsInMM[l],"MM",runType,".dat"),"a") do io
+                    if addHeaders==1 && k==1
+                        if forceProfile=="TwoD"
+                            writedlm(io,[headers ; hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,fill(currLongSpeedSaveVals,length(userSpeeds)),forceVsLongAvgSaveVals,forceVsLongUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg,pExcVsSpeedAvg)]);
+                        else
+                            writedlm(io,[headers ; hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg, pExcVsSpeedAvg)]);
+                        end
+                    else #if you've already added headers/don't want them, just append the current forceVsSpeed to the relevant file (so, if you have different longSpeeds, they'll all show up in same file since file is distinguished by displacement)
+                        if forceProfile=="TwoD"
+                            writedlm(io,hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,fill(currLongSpeedSaveVals,length(userSpeeds)),forceVsLongAvgSaveVals,forceVsLongUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg,pExcVsSpeedAvg));
+                        else
+                            writedlm(io,hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg, pExcVsSpeedAvg));
+                        end
                     end
-                else #if you've already added headers/don't want them, just append the current forceVsSpeed to the relevant file (so, if you have different longSpeeds, they'll all show up in same file since file is distinguished by displacement)
-                    if forceProfile=="TwoD"
-                        writedlm(io,hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,fill(currLongSpeedSaveVals,length(userSpeeds)),forceVsLongAvgSaveVals,forceVsLongUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg,pExcVsSpeedAvg));
-                    else
-                        writedlm(io,hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg, pExcVsSpeedAvg));
+                end
+            else
+                open(string(folderString,"/forceVsSpeedDisplacement",displacementsInMM[l],"MM",runType,".dat"),"a") do io
+                    if addHeaders==1 && k==1
+                        if forceProfile=="TwoD"
+                            writedlm(io,[headers ; hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,fill(currLongSpeedSaveVals,length(userSpeeds)),forceVsLongAvgSaveVals,forceVsLongUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg,pExcVsSpeedAvg)]);
+                        else
+                            writedlm(io,[headers ; hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg, pExcVsSpeedAvg)]);
+                        end
+                    else #if you've already added headers/don't want them, just append the current forceVsSpeed to the relevant file (so, if you have different longSpeeds, they'll all show up in same file since file is distinguished by displacement)
+                        if forceProfile=="TwoD"
+                            writedlm(io,hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,fill(currLongSpeedSaveVals,length(userSpeeds)),forceVsLongAvgSaveVals,forceVsLongUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg,pExcVsSpeedAvg));
+                        else
+                            writedlm(io,hcat(userSpeedsSaveVals, forceVsSpeedAvgSaveVals, forceVsSpeedUncSaveVals, forceVsPosAvgSaveVals, forceVsPosUncSaveVals,pF1DownVsSpeedAvg,pF0VsSpeedAvg,pF1UpVsSpeedAvg,pF2VsSpeedAvg, pExcVsSpeedAvg));
+                        end
                     end
                 end
             end
         end
     end#for longitudinal speeds
-
-end#for displacements
+end #for displacements
 
 laserVarHeaders = ["s0" "energy" "polSign" "whichTransition" "polType" "sidebandFreqs" "sidebandAmps"]
 if saveData ==1
-    open(string(folderString,"\\laserVariables.dat"),"w") do io
-        writedlm(io,[laserVarHeaders ; hcat(s0,laserEnergy,polSign,whichTransition,polType,sidebandFreqs,sidebandAmps)]);
+    if computer_type==0
+        open(string(folderString,"\\laserVariables.dat"),"w") do io
+            writedlm(io,[laserVarHeaders ; hcat(s0,laserEnergy,polSign,whichTransition,polType,sidebandFreqs,sidebandAmps)]);
+        end
+    else
+        open(string(folderString,"/laserVariables.dat"),"w") do io
+            writedlm(io,[laserVarHeaders ; hcat(s0,laserEnergy,polSign,whichTransition,polType,sidebandFreqs,sidebandAmps)]);
+        end
     end
-end
 
+end
