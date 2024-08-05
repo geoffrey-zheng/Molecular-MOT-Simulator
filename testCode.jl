@@ -1,5 +1,5 @@
 #0) Specify whether running on Macbook or Windows desktop
-computer_type = 1 #0 for desktop, 1 for Macbook
+computer_type = 0 #0 for desktop, 1 for Macbook
 
 #1)Go to directory and load external variables + functions
 cd(@__DIR__);#moves julia terminal to directory where this file is.  This directory should have auxFunctions+SrF(or whatever)Variables files as well
@@ -13,7 +13,7 @@ saveDataFolderTag = "SrFRedMOTNormalValues"; #If you want to put anything additi
 addHeaders=1;
 
 #3) Non Laser Detuning/Pol Simulation Variables (B-field, beam-waist etc.)
-bGradReal = 9.0;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
+bGradReal = 6.0;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
 waistInMM = 7;#only used if polType is 3D.  Handles finite MOT beam waists
 numTrialsPerValueSet = 2;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
 velDirRelToR = 0;#-1 will choose random values for direction of v,r.  0 will force them to be same direction. 1 forces orthogonal.  2 forces opposite.
