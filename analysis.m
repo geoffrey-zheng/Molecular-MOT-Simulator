@@ -8,10 +8,12 @@ colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
     [0.6;0.6;0.3],[0.6;0.3;0.6],[0.3;0.6;0.6],[0.4;0.4;0.8],[0.4;0.8;0.4],[0.8;0.4;0.4],[0.5;0.5;0.5],[0.9;0.2;0.1],...
     [0.2;0.4;0.7],[0.4;0.4;0.0],[0.0;0.4;0.2],[0.2;0.0;0.4],[0.0;0.0;0.0],[0.8;0.8;0.8]];
 
-dataFolder = 'saveData/SrFRedMOTNormalValuesbFieldSettingThreeDBGradGPerCM9.0ForceThreeDNumLasers5Date20240805_1530';
+dataFolder = 'saveData/SrFRedMOTNormalValuesbFieldSettingThreeDBGradGPerCM8.8ForceThreeDNumLasers5Date20240813_1850';
 
 % pos = {'0.5','1.0','1.5','2.0','2.5','3.0'};
-pos = {'0.5','1.5','3.0','4.5','6.0','7.5'};
+%pos = {'0.5','1.5','3.0','4.5','6.0','7.5'};
+%pos = {'1', '2', '3', '5', '7', '9', '11', '14', '17'};
+pos = {'0.5', '1.5', '3.0', '4.5', '6.0', '7.5', '9.0', '10.5', '12.0', '13.5', '15.0'};
 for i=1:length(pos)
     posForPlot(i) = str2num(pos{i});
 end
@@ -58,10 +60,12 @@ for i=1:length(vsToTryForCapture)
     end
 end
 
-%plot the highest value of v for which we have capture (TO DO)
+%plot the highest value of v for which we have capture 
 [ts2,ps2] = ode23(diffEqVals,[0 20],[min(sortedPos);currV-1]);
 figure(1);
 plot(ps2(:,1),ps2(:,2));
+xlabel('x(mm)');
+ylabel('v (m/s)')
 title(strcat('particle trajectory for v_{Cap}=',num2str(currV-1),' m/s'))
 
 %now plot a(x,v) heat map
@@ -143,4 +147,4 @@ if simTrapDynamics==1
     temp = vSq*mass/kb;
 end
 
-    
+%disp('Temperature', temp)   

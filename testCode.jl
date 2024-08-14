@@ -13,9 +13,9 @@ saveDataFolderTag = "SrFRedMOTNormalValues"; #If you want to put anything additi
 addHeaders=1;
 
 #3) Non Laser Detuning/Pol Simulation Variables (B-field, beam-waist etc.)
-bGradReal = 6.0;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
+bGradReal = 16.0;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
 waistInMM = 7;#only used if polType is 3D.  Handles finite MOT beam waists
-numTrialsPerValueSet = 2;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
+numTrialsPerValueSet = 8;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
 velDirRelToR = 0;#-1 will choose random values for direction of v,r.  0 will force them to be same direction. 1 forces orthogonal.  2 forces opposite.
 forceXY=1; #if '1', will force v, r to go along (x+y)/sqrt(2).  Simulates slowing/trapping of molecules moving along slowing axis in tandem with velDirToR = 0
 if velDirRelToR==-1
@@ -36,10 +36,12 @@ longSpeeds = 32; # doesn't matter for 3D sims, sets vel to 140 m/s (e.g., longit
 
 #4A) parameters for quick test of restoring force
 
-displacementsInMM = [0.5,1.5,3.0,4.5,6.0,7.5];
+#displacementsInMM = [0.5,1.5,3.0,4.5,6.0,7.5];
+displacementsInMM = [0.5,1.5,3.0,4.5,6.0,7.5,9.0,10.5,12,13.5,15];
 #displacementsInMM = [0.1];
 #userSpeeds = [-.01,.01];
-userSpeeds = [-4,-3,-2,-1,-0.5,-.1,-.05,.05,.1,.5,1,2,3,4];#speed in xy plane (for 2d force profile) or in 3D (normalized units v/(gam/k))
+#userSpeeds = [-4,-3,-2,-1,-0.5,-.1,-.05,.05,.1,.5,1,2,3,4];#speed in xy plane (for 2d force profile) or in 3D (normalized units v/(gam/k)). in normalized units, gam/k = 4.4 m/s for SrF, 5.03 m/s for CaF, 7.49 m/s for Ag 
+userSpeeds = [-5,-4,-3,-2,-1,-0.5,-.1,-.05,.05,.1,.5,1,2,3,4,5];
 forceProfile = "ThreeD";#either "ThreeD", (forces calculated are (f\dot r)/|r|, (f\dot v)/|v|), or "TwoD" (f\dot(rx,ry,0)/|(rx,ry,0)^2, f\dot(vx,vy,0)/|(vx,vy,0)^2, and f\dotz are all calculated)
 bFieldSetting = "ThreeD";#can set to 3D quadrupole "ThreeD" (e.g. 3D-MOT"), 2D quadrupole "TwoD" (e.g. 2D-MOT") or static "Static" (2D transverse slowing primarily, could also use to simulate e.g. lambda-cooling in 3D field).  
 
@@ -47,7 +49,8 @@ bFieldSetting = "ThreeD";#can set to 3D quadrupole "ThreeD" (e.g. 3D-MOT"), 2D q
 #4B) typical choices for simulating red-MOT
 #=
 displacementsInMM = [1,2,3,5,7,9,11,14,17];
-userSpeeds = [.05,.1,.2,.4,.6,1,1.5,2,2.5,3,3.5,5,6.5,8];
+#userSpeeds = [.05,.1,.2,.4,.6,1,1.5,2,2.5,3,3.5,5,6.5,8]; #for SrF case
+userSpeeds = [.05,.1,.2,.4,.6,1,1.5,2,2.5,3,3.5,4]; #for CaF case
 forceProfile = "ThreeD";
 bFieldSetting = "ThreeD";
 =#
@@ -138,11 +141,11 @@ sidebandFreqs = [0.,0.,0.,0.,0.,0.,0.,0.,0.6];
 sidebandAmps = [0.,0.,0.,0.,0.,0.,0.,0.,44.];
 =#
 
-#5D) red XA 3D 5-laser MOT params
+#5D) red XA 3D 5-laser MOT params (for SrF-type)
 
-s0 = [10.4,19.2,10.4,31.3,8.7]./1.0;
+s0 = [10,20,10,31.3,8.7]./1.0;
 detunings=[0,0,0,0,0];#not used here, just write actual laser energies
-laserEnergy = [-1.0,-9.8,-18.6,-26.8,-20.8];
+laserEnergy = [-1.1,-9.7,-18.5,-26.6,-20.7];
 polSign = [1,1,1,-1,-1];
 whichTransition = ["XA","XA","XA","XA","XA"];#
 polType = ["3D","3D","3D","3D","3D"];
@@ -150,6 +153,17 @@ sidebandFreqs = [0.,0.,0.,0.,0.];
 sidebandAmps = [0.,0.,0.,0.,0.];
 
 
+#5D1) red XA 3D 4-laser MOT params (for CaF-type)
+#=
+s0 = [20,20,20,20]./1.0;
+detunings=[0,0,0,0];#not used here, just write actual laser energies
+laserEnergy = [-1.4,-10.7,-16.1,-19.5];
+polSign = [1,1,1,-1];
+whichTransition = ["XA","XA","XA","XA"];#
+polType = ["3D","3D","3D","3D"];
+sidebandFreqs = [0.,0.,0.,0.];
+sidebandAmps = [0.,0.,0.,0.];
+=#
 
 
 #5D2) blue XA only 1 fiber eom
