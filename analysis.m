@@ -1,14 +1,14 @@
 clear all;
 close all;
-simTrapDynamics =0; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
-moleculeName = "Ag";
+simTrapDynamics =1; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
+moleculeName = "SrF";
 molecule = def_molecule(moleculeName);
 
 colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
     [0.6;0.6;0.3],[0.6;0.3;0.6],[0.3;0.6;0.6],[0.4;0.4;0.8],[0.4;0.8;0.4],[0.8;0.4;0.4],[0.5;0.5;0.5],[0.9;0.2;0.1],...
     [0.2;0.4;0.7],[0.4;0.4;0.0],[0.0;0.4;0.2],[0.2;0.0;0.4],[0.0;0.0;0.0],[0.8;0.8;0.8]];
 
-dataFolder = 'saveData/AgRedMOTBGradGPerCM10Date20240814_1145';
+dataFolder = 'saveData/SrFRedMOTNormalValuesbFieldSettingThreeDBGradGPerCM8.8ForceThreeDNumLasers5Date20240814_1905';
 
 % pos = {'0.5','1.0','1.5','2.0','2.5','3.0'};
 %pos = {'0.5','1.5','3.0','4.5','6.0','7.5'};
@@ -31,7 +31,7 @@ for i=1:length(pos)
     vels = currData.Speed;
     accelsInVelDirection(:,i) = currData.av;
     accelsInPosDirection(:,i) = currData.ar;
-    excitedPop(:,i) = currData.PFeThreeHalfHigh+currData.PFeThreeHalfLow;
+    excitedPop(:,i) = currData.PExc;
 end
 
 %reverse sign of accel for negative velocities
@@ -147,5 +147,3 @@ if simTrapDynamics==1
     sigma=sqrt(mean(r(startInd:endInd).^2));
     temp = vSq*mass/kb;
 end
-
-%disp('Temperature', temp)   
