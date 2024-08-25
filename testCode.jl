@@ -13,9 +13,9 @@ saveDataFolderTag = "SrFRedMOTNormalValues"; #If you want to put anything additi
 addHeaders=1;
 
 #3) Non Laser Detuning/Pol Simulation Variables (B-field, beam-waist etc.)
-bGradReal = 8.8;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
-waistInMM = 7;#only used if polType is 3D.  Handles finite MOT beam waists
-numTrialsPerValueSet = 4;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
+bGradReal = 16.0;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
+waistInMM = 6;#only used if polType is 3D.  Handles finite MOT beam waists
+numTrialsPerValueSet = 2;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
 velDirRelToR = 0;#-1 will choose random values for direction of v,r.  0 will force them to be same direction. 1 forces orthogonal.  2 forces opposite.
 forceXY=1; #if '1', will force v, r to go along (x+y)/sqrt(2).  Simulates slowing/trapping of molecules moving along slowing axis in tandem with velDirToR = 0
 if velDirRelToR==-1
