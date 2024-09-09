@@ -1,6 +1,6 @@
 clear all;
 close all;
-simTrapDynamics =1; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
+simTrapDynamics =0; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
 moleculeName = "SrF";
 molecule = def_molecule(moleculeName);
 
@@ -8,7 +8,7 @@ colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
     [0.6;0.6;0.3],[0.6;0.3;0.6],[0.3;0.6;0.6],[0.4;0.4;0.8],[0.4;0.8;0.4],[0.8;0.4;0.4],[0.5;0.5;0.5],[0.9;0.2;0.1],...
     [0.2;0.4;0.7],[0.4;0.4;0.0],[0.0;0.4;0.2],[0.2;0.0;0.4],[0.0;0.0;0.0],[0.8;0.8;0.8]];
 
-dataFolder = 'saveData/SrFRedMOTNormalValuesbFieldSettingThreeDBGradGPerCM16.0ForceThreeDNumLasers5Date20240826_1021';
+dataFolder = 'saveData/SrFRedMOTNormalValuesbFieldSettingThreeDBGradGPerCM8.0ForceThreeDNumLasers5Date20240907_1943';
 
 % pos = {'0.5','1.0','1.5','2.0','2.5','3.0'};
 %pos = {'0.5','1.5','3.0','4.5','6.0','7.5'};
@@ -48,6 +48,7 @@ excitedPopFull = [flipud(fliplr(excitedPop)),excitedPop];
 sortedPos = sort([-posForPlot,posForPlot]);
 oneAxisAccel = @(d,v) interp2(sortedPos,vels,accelsInVelDirectionFull./1e3,d,v);%in mm,ms units
 
+
 %simulate capture with linear interpolation (spline acts up here for some
 %reason.  Probably not a big deal to use linear)
 diffEqVals = @(t,p) [p(2);oneAxisAccel(p(1),p(2))];
@@ -55,19 +56,89 @@ vsToTryForCapture = [1:1:30];
 for i=1:length(vsToTryForCapture)
     currV = vsToTryForCapture(i);
     [ts2,ps2] = ode23(diffEqVals,[0 20],[min(sortedPos);currV]);
-%     [ts2,ps2] = ode23(diffEqVals,[0 1e-1],[-0*1e-3;currV]);
+    %[ts2,ps2] = ode23(diffEqVals,[0 50],[min(sortedPos);currV]); %try 50 ms capture time
+    %[ts2,ps2] = ode23(diffEqVals,[0 1e-1],[-0*1e-3;currV]);
     if isnan(ps2(end,1))
         break;
     end
 end
 
-%plot the highest value of v for which we have capture 
-[ts2,ps2] = ode23(diffEqVals,[0 20],[min(sortedPos);currV-1]);
+
+
+% Plot multiple phase space trajectories on same plot
+figure;
+hold on; % This ensures all plots are on the same figure
+
+% Initialize an array to store plot handles
+plotHandles = gobjects(currV, 1); % Preallocate for better performance
+
+% Initialize a cell array to store legend labels
+legendLabels = cell(currV, 1);
+
+% Loop from currV down to 1, in steps of -3
+for v = currV:-3:1
+    % Solve the ODE with the current velocity
+    [ts2, ps2] = ode23(diffEqVals, [0 50], [min(sortedPos); v]);
+    
+    % Plot the entire trajectory and store the plot handle
+    plotHandles(v) = plot(ps2(:, 1), ps2(:, 2), 'LineWidth',2);
+    
+    % Store the legend label for the current plot
+    legendLabels{v} = ['v_0 = ' num2str(v) ' m/s'];
+end
+
+% Set labels and title
+xlabel('d (mm)');
+ylabel('v_{d} (m/s)');
+title('Particle Trajectories for Different Initial Velocities');
+
+% Create the legend
+legend(plotHandles(currV:-3:1), legendLabels(currV:-3:1), 'Location', 'best');
+%saveas(gcf, 'phase_space_MOT_capture_highDPI.png');
+%print(gcf, 'phase_space_MOT_capture_highDPI', '-dpng', '-r300'); % 300 DPI
+
+hold off;
+
+%{
+print('HighDPIPlot', '-dpng', '-r300'); % Saves as 'HighDPIPlot.png'
+
+
+%}
+
+%{
+%plot the highest value of v for which we have capture (evolve out to t=50)
+[ts2,ps2] = ode23(diffEqVals,[0 100],[min(sortedPos);currV-1]);
 figure(1);
 plot(ps2(:,1),ps2(:,2));
 xlabel('x(mm)');
 ylabel('v (m/s)')
 title(strcat('particle trajectory for v_{Cap}=',num2str(currV-1),' m/s'))
+%}
+
+
+%{
+%plot lower velocity trajectories as well, and for 50 ms instead of 20 ms
+[ts2,ps2] = ode23(diffEqVals,[0 50],[min(sortedPos);currV-5]);
+figure(1);
+
+% Filter the time points between t = 4 and t = 50
+timeIndices = (ts2 >= 4) & (ts2 <= 50);
+
+% Plot the filtered data
+plot(ps2(timeIndices, 1), ps2(timeIndices, 2));
+xlabel('z(mm)');
+ylabel('v (m/s)')
+title('Particle Trajectory from t = 4 to t = 50');
+
+%plot trajectory for a speed lower than capture velocity
+%{
+plot(ps2(:,1),ps2(:,2));
+xlabel('x(mm)');
+ylabel('v (m/s)')
+title(strcat('particle trajectory for v_{Cap}=',num2str(currV-8),' m/s'))
+%}
+%}
+
 
 %now plot a(x,v) heat map
 oneAxisAccel = @(d,v) interp2(sortedPos,vels,accelsInVelDirectionFull./1e3,d,v,'spline');%in mm,ms units
@@ -84,11 +155,11 @@ end
 figure(2);
 imagesc(xsForHeatMap,vsForHeatMap,heatMap)
 colorbar
-xlabel('x(mm)');
-ylabel('v (m/s)')
+xlabel('d (mm)');
+ylabel('v_{d} (m/s)')
 xlim([min(sortedPos) max(sortedPos)])
 h=colorbar;
-h.Title.String = "a (mm/ms^{2})"
+h.Title.String = "a_{d} (mm/ms^{2})"
 
 %make x,v plots from matrix
 vMaxToInt = 4;
@@ -102,21 +173,24 @@ accVsVelForPlot = trapz(xsForHeatMap(minCol:maxCol),heatMap(:,minCol:maxCol),2).
 figure(3);
 hold all;
 plot(xsForHeatMap,accVsPosForPlot,'Linewidth',2);
-xlabel('x(mm)');
-ylabel('a(mm/ms^{2})')
+xlabel('d (mm)');
+ylabel('a_{d} (mm/ms^{2})')
 title('Acceleration vs Position')
 figure(4);
 hold all;
 plot(vsForHeatMap,accVsVelForPlot,'LineWidth',2);
-xlabel('v(m/s)');
-ylabel('a(mm/ms^{2})')
+xlabel('v_{d} (m/s)');
+ylabel('a_{d} (mm/ms^{2})')
 title('Acceleration vs Velocity')
+
 
 [~,minCol] = min(abs(sortedPos+xMaxToInt));
 [~,maxCol] = min(abs(sortedPos-xMaxToInt));
 [~,minRow] = min(abs(vels+vMaxToInt));
 [~,maxRow] = min(abs(vels-vMaxToInt));
 meanExcPop = mean(mean(excitedPopFull(minRow:maxRow,minCol:maxCol)));
+
+
 
 %sim trap dynamics
 maxTime=40;
@@ -147,3 +221,72 @@ if simTrapDynamics==1
     sigma=sqrt(mean(r(startInd:endInd).^2));
     temp = vSq*mass/kb;
 end
+
+%{
+%plot trajectory starting from (z, v_z) within the MOT (i.e. z=1 mm, v_z =
+%1 m/s
+figure;
+hold on;
+[ts2,ps2] = ode23(diffEqVals,[0 100],[1;1]);
+plot(ps2(:,1),ps2(:,2));
+
+%use same trap dynamics algorithm to plot trajectory with photon scatter
+%make sure maxTime is 100 ms here
+maxTime=100;
+scatterRate = meanExcPop*gam*1e-3;%in 1/ms
+tKick = 1/scatterRate;
+v(1) = 1;%mm/ms
+r(1) = 1;%mm
+vKick = hbar*kA/mass;
+for i=1:round(maxTime/tKick)
+    randPhi1 = 2*pi*rand;
+    randPhi2 = 2*pi*rand;
+    v(i+1) = v(i)+vKick*(cos(randPhi1)+cos(randPhi2))+oneAxisAccel(r(i),v(i))*tKick;
+    r(i+1) = r(i)+v(i)*tKick;
+end
+
+plot(r, v, '-'); % Plots position (r) on the x-axis and velocity (v) on the y-axis
+grid on; % Add a grid for better visualization
+xlabel('z(mm)');
+ylabel('v(mm/ms)')
+title(strcat('particle trajectory for captured molecule in MOT for 100 ms'))
+%}
+
+
+figure;
+hold on;
+
+% Solve the differential equation and plot the trajectory
+[ts2,ps2] = ode23(diffEqVals,[0 100],[1;1]); %1;1 indicates initial v and r
+plot(ps2(:,1), ps2(:,2), 'LineWidth', 2, 'DisplayName', 'Without Photon Scatter'); % Thicker line and legend entry
+
+% Use the trap dynamics algorithm to plot the trajectory with photon scatter
+maxTime = 100;
+scatterRate = meanExcPop * gam * 1e-3; % in 1/ms
+tKick = 1 / scatterRate;
+v(1) = 1; % mm/ms
+r(1) = 1; % mm
+vKick = hbar * kA / mass;
+
+for i = 1:round(maxTime / tKick)
+    randPhi1 = 2 * pi * rand;
+    randPhi2 = 2 * pi * rand;
+    v(i + 1) = v(i) + vKick * (cos(randPhi1) + cos(randPhi2)) + oneAxisAccel(r(i), v(i)) * tKick;
+    r(i + 1) = r(i) + v(i) * tKick;
+end
+
+% Plot the trajectory with photon scatter
+plot(r, v, '-', 'LineWidth', 2, 'DisplayName', 'With Photon Scatter'); % Thicker line and legend entry
+
+% Add grid, labels, and title
+grid on;
+xlabel('d (mm)');
+ylabel('v_{d} (mm/ms)');
+title('Particle Trajectory for Captured Molecule in MOT for 100 ms');
+
+% Create a legend
+legend('Location', 'best');
+
+% Save the figure as a 300 DPI image
+%saveas(gcf, 'particle_trajectory_MOT.png');
+%print(gcf, 'particle_trajectory_MOT', '-dpng', '-r300'); % 300 DPI
