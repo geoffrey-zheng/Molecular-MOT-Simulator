@@ -1,6 +1,6 @@
 clear all;
 close all;
-simTrapDynamics =0; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
+simTrapDynamics =1; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
 moleculeName = "SrF";
 molecule = def_molecule(moleculeName);
 
@@ -8,7 +8,7 @@ colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
     [0.6;0.6;0.3],[0.6;0.3;0.6],[0.3;0.6;0.6],[0.4;0.4;0.8],[0.4;0.8;0.4],[0.8;0.4;0.4],[0.5;0.5;0.5],[0.9;0.2;0.1],...
     [0.2;0.4;0.7],[0.4;0.4;0.0],[0.0;0.4;0.2],[0.2;0.0;0.4],[0.0;0.0;0.0],[0.8;0.8;0.8]];
 
-dataFolder = 'saveData/SrFRedMOTNormalValuesbFieldSettingThreeDBGradGPerCM8.0ForceThreeDNumLasers5Date20240907_1943';
+dataFolder = 'saveData/SrFRedMOTNormalValuesbFieldSettingThreeDBGradGPerCM8.0ForceThreeDNumLasers5Date20240910_1307';
 
 % pos = {'0.5','1.0','1.5','2.0','2.5','3.0'};
 %pos = {'0.5','1.5','3.0','4.5','6.0','7.5'};
@@ -253,10 +253,14 @@ title(strcat('particle trajectory for captured molecule in MOT for 100 ms'))
 %}
 
 
+%{
+plot MOT trajectory including random photon scatter
+
 figure;
 hold on;
 
-% Solve the differential equation and plot the trajectory
+% Solve the differential equation and plot the trajectory (without photon
+scatter)
 [ts2,ps2] = ode23(diffEqVals,[0 100],[1;1]); %1;1 indicates initial v and r
 plot(ps2(:,1), ps2(:,2), 'LineWidth', 2, 'DisplayName', 'Without Photon Scatter'); % Thicker line and legend entry
 
@@ -290,3 +294,4 @@ legend('Location', 'best');
 % Save the figure as a 300 DPI image
 %saveas(gcf, 'particle_trajectory_MOT.png');
 %print(gcf, 'particle_trajectory_MOT', '-dpng', '-r300'); % 300 DPI
+%}
