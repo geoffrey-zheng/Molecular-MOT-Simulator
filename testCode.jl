@@ -1,5 +1,8 @@
 #0) Specify whether running on Macbook or Windows desktop
-computer_type = 1 #0 for desktop, 1 for Macbook
+computer_type = 0 #0 for desktop, 1 for Macbook
+
+#0A) Is vibrational repump being used for molecules?
+vib_repump = 1; #1 for yes, 0 for no
 
 #1)Go to directory and load external variables + functions
 cd(@__DIR__);#moves julia terminal to directory where this file is.  This directory should have auxFunctions+SrF(or whatever)Variables files as well
@@ -9,11 +12,16 @@ include("auxFunctions.jl");#supplementary functions
 #2) User choices with respect to saving output files
 saveInRealUnits = 1;#if 1, save vel+accel in m/s, mm/ms^2.  If 0, save in normalized units (vel= v/(gam/k)), (force=1e-3*hbar*k*gam)
 saveData=1;#if you want to save the data
-saveDataFolderTag = "SrFRedMOTNormalValues"; #If you want to put anything additional in "savefoldername" to tag it, see variable folderString after lasers are declared.
+
+if vib_repump == 1
+    saveDataFolderTag = "SrFRedMOTVibRepump"; #If you want to put anything additional in "savefoldername" to tag it, see variable folderString after lasers are declared.
+else
+    saveDataFolderTag = "SrFRedMOT"; #If you want to put anything additional in "savefoldername" to tag it, see variable folderString after lasers are declared.
+end
 addHeaders=1;
 
 #3) Non Laser Detuning/Pol Simulation Variables (B-field, beam-waist etc.)
-bGradReal = 8.0;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
+bGradReal = 8.8;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
 waistInMM = 7;#only used if polType is 3D.  Handles finite MOT beam waists
 numTrialsPerValueSet = 2;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
 velDirRelToR = 0;#-1 will choose random values for direction of v,r.  0 will force them to be same direction. 1 forces orthogonal.  2 forces opposite.
@@ -144,7 +152,7 @@ sidebandAmps = [0.,0.,0.,0.,0.,0.,0.,0.,44.];
 =#
 
 #5D) red XA 3D 5-laser MOT params (for SrF-type)
-
+#=
 s0 = [10,20,10,31.3,8.7]./1.0;
 detunings=[0,0,0,0,0];#not used here, just write actual laser energies
 laserEnergy = [-1.1,-9.7,-18.5,-26.6,-20.7];
@@ -153,6 +161,18 @@ whichTransition = ["XA","XA","XA","XA","XA"];#
 polType = ["3D","3D","3D","3D","3D"];
 sidebandFreqs = [0.,0.,0.,0.,0.];
 sidebandAmps = [0.,0.,0.,0.,0.];
+=#
+
+#5D0) red XA 3D 5-laser MOT params (for SrF-type) INCLUDING VIBRATIONAL REPUMP
+
+s0 = [10,20,10,31.3,8.7,20,20,20,20]./1.0;
+detunings=[0,0,0,0,0,0,0,0,0];#not used here, just write actual laser energies
+laserEnergy = [-1.1,-9.7,-18.5,-26.6,-20.7, -stateEnergiesGround[1] + 0,-stateEnergiesGround[2] + 0, -stateEnergiesGround[3] + 0, -stateEnergiesGround[4] + 0]; #vib repump on resonance w/all levels
+polSign = [1,1,1,-1,-1,1,1,1,1];
+whichTransition = ["XA","XA","XA","XA","XA","XARepump","XARepump","XARepump","XARepump"];#
+polType = ["3D","3D","3D","3D","3D","3D","3D","3D","3D"];
+sidebandFreqs = [0.,0.,0.,0.,0.,0.,0.,0.,0.];
+sidebandAmps = [0.,0.,0.,0.,0.,0.,0.,0.,0.];
 
 
 #5D1) red XA 3D 4-laser MOT params (for CaF-type)
@@ -165,6 +185,18 @@ whichTransition = ["XA","XA","XA","XA"];#
 polType = ["3D","3D","3D","3D"];
 sidebandFreqs = [0.,0.,0.,0.];
 sidebandAmps = [0.,0.,0.,0.];
+=#
+
+#5D1A) red XA 3D 4-laser MOT params (for CaF-type) INCLUDING VIBRATIONAL REPUMP
+#=
+s0 = [20,20,20,20,20,20,20,20]./1.0;
+detunings=[0,0,0,0,0,0,0,0];#not used here, just write actual laser energies
+laserEnergy = [-1.4,-10.7,-16.1,-19.5,-stateEnergiesGround[1] + 0,-stateEnergiesGround[2] + 0, -stateEnergiesGround[3] + 0, -stateEnergiesGround[4] + 0];
+polSign = [1,1,1,-1,1,1,1,1];
+whichTransition = ["XA","XA","XA","XA","XARepump","XARepump","XARepump","XARepump"];#
+polType = ["3D","3D","3D","3D","3D","3D","3D","3D"];
+sidebandFreqs = [0.,0.,0.,0.,0.,0.,0.,0.];
+sidebandAmps = [0.,0.,0.,0.,0.,0.,0.,0.];
 =#
 
 
