@@ -2,7 +2,7 @@
 computer_type = 0 #0 for desktop, 1 for Macbook
 
 #0A) Is vibrational repump being used for molecules?
-vib_repump = 1; #1 for yes, 0 for no
+vib_repump = 0; #1 for yes, 0 for no
 
 #1)Go to directory and load external variables + functions
 cd(@__DIR__);#moves julia terminal to directory where this file is.  This directory should have auxFunctions+SrF(or whatever)Variables files as well
@@ -21,9 +21,9 @@ end
 addHeaders=1;
 
 #3) Non Laser Detuning/Pol Simulation Variables (B-field, beam-waist etc.)
-bGradReal = 8.8;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
-waistInMM = 7;#only used if polType is 3D.  Handles finite MOT beam waists
-numTrialsPerValueSet = 10;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
+bGradReal = 8.0;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
+waistInMM = 9;#only used if polType is 3D.  Handles finite MOT beam waists
+numTrialsPerValueSet = 50;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
 velDirRelToR = 0;#-1 will choose random values for direction of v,r.  0 will force them to be same direction. 1 forces orthogonal.  2 forces opposite.
 forceXY=1; #if '1', will force v, r to go along (x+y)/sqrt(2).  Simulates slowing/trapping of molecules moving along slowing axis in tandem with velDirToR = 0
 if velDirRelToR==-1
@@ -152,7 +152,7 @@ sidebandAmps = [0.,0.,0.,0.,0.,0.,0.,0.,44.];
 =#
 
 #5D) red XA 3D 5-laser MOT params (for SrF-type)
-#=
+
 s0 = [10,20,10,31.3,8.7]./1.0;
 detunings=[0,0,0,0,0];#not used here, just write actual laser energies
 laserEnergy = [-1.1,-9.7,-18.5,-26.6,-20.7];
@@ -161,10 +161,10 @@ whichTransition = ["XA","XA","XA","XA","XA"];#
 polType = ["3D","3D","3D","3D","3D"];
 sidebandFreqs = [0.,0.,0.,0.,0.];
 sidebandAmps = [0.,0.,0.,0.,0.];
-=#
+
 
 #5D0) red XA 3D 5-laser MOT params (for SrF-type) INCLUDING VIBRATIONAL REPUMP
-
+#=
 s0 = [10,20,10,31.3,8.7,20,20,20,20]./1.0;
 detunings=[0,0,0,0,0,0,0,0,0];#not used here, just write actual laser energies
 laserEnergy = [-1.1,-9.7,-18.5,-26.6,-20.7, -stateEnergiesGround[1] + 0,-stateEnergiesGround[2] + 0, -stateEnergiesGround[3] + 0, -stateEnergiesGround[4] + 0]; #vib repump on resonance w/all levels
@@ -173,7 +173,7 @@ whichTransition = ["XA","XA","XA","XA","XA","XARepump","XARepump","XARepump","XA
 polType = ["3D","3D","3D","3D","3D","3D","3D","3D","3D"];
 sidebandFreqs = [0.,0.,0.,0.,0.,0.,0.,0.,0.];
 sidebandAmps = [0.,0.,0.,0.,0.,0.,0.,0.,0.];
-
+=#
 
 #5D1) red XA 3D 4-laser MOT params (for CaF-type)
 #=
