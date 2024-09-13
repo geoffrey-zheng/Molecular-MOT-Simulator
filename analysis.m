@@ -1,14 +1,21 @@
-clear all;
-close all;
-simTrapDynamics =1; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
-moleculeName = "SrF";
-molecule = def_molecule(moleculeName);
-
 colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
     [0.6;0.6;0.3],[0.6;0.3;0.6],[0.3;0.6;0.6],[0.4;0.4;0.8],[0.4;0.8;0.4],[0.8;0.4;0.4],[0.5;0.5;0.5],[0.9;0.2;0.1],...
     [0.2;0.4;0.7],[0.4;0.4;0.0],[0.0;0.4;0.2],[0.2;0.0;0.4],[0.0;0.0;0.0],[0.8;0.8;0.8]];
 
-dataFolder = 'saveData/SrFRedMOTVibRepumpbFieldSettingThreeDBGradGPerCM8.8ForceThreeDNumLasers9Date20240910_1652';
+simTrapDynamics =1; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
+moleculeName = "SrF";
+molecule = def_molecule(moleculeName);
+vib_repump = 0; %1 if vibrational repump used, 0 otherwise
+bfield_grad = "15.0"; %b-field gradient used
+num_lasers_used = "5"; %number of lasers used in MOT
+data_timestamp = "20240911_1804";
+base_folder = "saveData/";
+if vib_repump == 0
+    dataFolder = strcat(base_folder, moleculeName, "RedMOTbFieldSettingThreeDBGradGPerCM", bfield_grad, "ForceThreeDNumLasers", num_lasers_used, "Date", data_timestamp);
+else
+    dataFolder = strcat(base_folder, moleculeName, "RedMOTVibRepumpbFieldSettingThreeDBGradGPerCM", bfield_grad, "ForceThreeDNumLasers", num_lasers_used, "Date", data_timestamp);
+end
+%dataFolder = 'saveData/SrFRedMOTbFieldSettingThreeDBGradGPerCM8.0ForceThreeDNumLasers5Date20240911_0927';
 
 % pos = {'0.5','1.0','1.5','2.0','2.5','3.0'};
 %pos = {'0.5','1.5','3.0','4.5','6.0','7.5'};
@@ -52,7 +59,7 @@ oneAxisAccel = @(d,v) interp2(sortedPos,vels,accelsInVelDirectionFull./1e3,d,v);
 %simulate capture with linear interpolation (spline acts up here for some
 %reason.  Probably not a big deal to use linear)
 diffEqVals = @(t,p) [p(2);oneAxisAccel(p(1),p(2))];
-vsToTryForCapture = [1:1:30];
+vsToTryForCapture = [1:0.1:30]; %step size is 0.1 m/s
 for i=1:length(vsToTryForCapture)
     currV = vsToTryForCapture(i);
     [ts2,ps2] = ode23(diffEqVals,[0 20],[min(sortedPos);currV]);
@@ -64,7 +71,7 @@ for i=1:length(vsToTryForCapture)
 end
 
 
-
+%{
 % Plot multiple phase space trajectories on same plot
 figure;
 hold on; % This ensures all plots are on the same figure
@@ -98,23 +105,23 @@ legend(plotHandles(currV:-3:1), legendLabels(currV:-3:1), 'Location', 'best');
 %print(gcf, 'phase_space_MOT_capture_highDPI', '-dpng', '-r300'); % 300 DPI
 
 hold off;
-
+%}
 %{
 print('HighDPIPlot', '-dpng', '-r300'); % Saves as 'HighDPIPlot.png'
 
 
 %}
 
-%{
-%plot the highest value of v for which we have capture (evolve out to t=50)
+
+%plot the highest value of v for which we have capture (evolve out to t=100 ms)
 [ts2,ps2] = ode23(diffEqVals,[0 100],[min(sortedPos);currV-1]);
 figure(1);
-plot(ps2(:,1),ps2(:,2));
-xlabel('x(mm)');
-ylabel('v (m/s)')
-title(strcat('particle trajectory for v_{Cap}=',num2str(currV-1),' m/s'))
-%}
-
+plot(ps2(:,1),ps2(:,2),'LineWidth',2);
+xlabel('d (mm)', fontsize=12);
+ylabel('v_{d} (m/s)', fontsize=12);
+title(strcat('Molecule Trajectory for v_{Cap}=',num2str(currV-0.1),' m/s'), fontsize=14)
+%write to csv
+writematrix(ps2, strcat('MoleculeMOTTrials/CaptureVelocityTrajectory', data_timestamp, '.csv'));
 
 %{
 %plot lower velocity trajectories as well, and for 50 ms instead of 20 ms
@@ -183,6 +190,10 @@ xlabel('v_{d} (m/s)');
 ylabel('a_{d} (mm/ms^{2})')
 title('Acceleration vs Velocity')
 
+%write to csv
+writematrix([xsForHeatMap; accVsPosForPlot]', strcat('MoleculeMOTTrials/AccelVsPos', data_timestamp, '.csv'));
+writematrix([vsForHeatMap; accVsVelForPlot']', strcat('MoleculeMOTTrials/AccelVsVel', data_timestamp, '.csv'));
+
 
 [~,minCol] = min(abs(sortedPos+xMaxToInt));
 [~,maxCol] = min(abs(sortedPos-xMaxToInt));
@@ -222,45 +233,14 @@ if simTrapDynamics==1
     temp = vSq*mass/kb;
 end
 
-%{
-%plot trajectory starting from (z, v_z) within the MOT (i.e. z=1 mm, v_z =
-%1 m/s
-figure;
-hold on;
-[ts2,ps2] = ode23(diffEqVals,[0 100],[1;1]);
-plot(ps2(:,1),ps2(:,2));
-
-%use same trap dynamics algorithm to plot trajectory with photon scatter
-%make sure maxTime is 100 ms here
-maxTime=100;
-scatterRate = meanExcPop*gam*1e-3;%in 1/ms
-tKick = 1/scatterRate;
-v(1) = 1;%mm/ms
-r(1) = 1;%mm
-vKick = hbar*kA/mass;
-for i=1:round(maxTime/tKick)
-    randPhi1 = 2*pi*rand;
-    randPhi2 = 2*pi*rand;
-    v(i+1) = v(i)+vKick*(cos(randPhi1)+cos(randPhi2))+oneAxisAccel(r(i),v(i))*tKick;
-    r(i+1) = r(i)+v(i)*tKick;
-end
-
-plot(r, v, '-'); % Plots position (r) on the x-axis and velocity (v) on the y-axis
-grid on; % Add a grid for better visualization
-xlabel('z(mm)');
-ylabel('v(mm/ms)')
-title(strcat('particle trajectory for captured molecule in MOT for 100 ms'))
-%}
 
 
-%{
-plot MOT trajectory including random photon scatter
+%plot MOT trajectory including random photon scatter
 
 figure;
 hold on;
 
-% Solve the differential equation and plot the trajectory (without photon
-scatter)
+% Solve the differential equation and plot the trajectory (without photon scatter)
 [ts2,ps2] = ode23(diffEqVals,[0 100],[1;1]); %1;1 indicates initial v and r
 plot(ps2(:,1), ps2(:,2), 'LineWidth', 2, 'DisplayName', 'Without Photon Scatter'); % Thicker line and legend entry
 
@@ -291,7 +271,11 @@ title('Particle Trajectory for Captured Molecule in MOT for 100 ms');
 % Create a legend
 legend('Location', 'best');
 
+%write to csv
+writematrix(ps2, strcat('MoleculeMOTTrials/MOTTrajectoryNoScatter', data_timestamp, '.csv'));
+writematrix([r; v]', strcat('MoleculeMOTTrials/MOTTrajectoryYesScatter', data_timestamp, '.csv'));
+
+%}
 % Save the figure as a 300 DPI image
 %saveas(gcf, 'particle_trajectory_MOT.png');
 %print(gcf, 'particle_trajectory_MOT', '-dpng', '-r300'); % 300 DPI
-%}
