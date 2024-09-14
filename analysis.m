@@ -6,9 +6,9 @@ simTrapDynamics =1; %change to 1 if you want to simulate particle trajectory, wi
 moleculeName = "SrF";
 molecule = def_molecule(moleculeName);
 vib_repump = 0; %1 if vibrational repump used, 0 otherwise
-bfield_grad = "15.0"; %b-field gradient used
+bfield_grad = "8.0"; %b-field gradient used
 num_lasers_used = "5"; %number of lasers used in MOT
-data_timestamp = "20240911_1804";
+data_timestamp = "20240912_1128";
 base_folder = "saveData/";
 if vib_repump == 0
     dataFolder = strcat(base_folder, moleculeName, "RedMOTbFieldSettingThreeDBGradGPerCM", bfield_grad, "ForceThreeDNumLasers", num_lasers_used, "Date", data_timestamp);
@@ -70,6 +70,7 @@ for i=1:length(vsToTryForCapture)
     end
 end
 
+capVel = currV-0.2;
 
 %{
 % Plot multiple phase space trajectories on same plot
@@ -114,12 +115,12 @@ print('HighDPIPlot', '-dpng', '-r300'); % Saves as 'HighDPIPlot.png'
 
 
 %plot the highest value of v for which we have capture (evolve out to t=100 ms)
-[ts2,ps2] = ode23(diffEqVals,[0 100],[min(sortedPos);currV-1]);
+[ts2,ps2] = ode23(diffEqVals,[0 100],[min(sortedPos);currV-0.2]);
 figure(1);
 plot(ps2(:,1),ps2(:,2),'LineWidth',2);
 xlabel('d (mm)', fontsize=12);
 ylabel('v_{d} (m/s)', fontsize=12);
-title(strcat('Molecule Trajectory for v_{Cap}=',num2str(currV-0.1),' m/s'), fontsize=14)
+title(strcat('Molecule Trajectory for v_{Cap}=',num2str(currV-0.2),' m/s'), fontsize=14)
 %write to csv
 writematrix(ps2, strcat('MoleculeMOTTrials/CaptureVelocityTrajectory', data_timestamp, '.csv'));
 
@@ -164,6 +165,7 @@ imagesc(xsForHeatMap,vsForHeatMap,heatMap)
 colorbar
 xlabel('d (mm)');
 ylabel('v_{d} (m/s)')
+title('Heat Map of MOT Dynamics, all-blue detuning')
 xlim([min(sortedPos) max(sortedPos)])
 h=colorbar;
 h.Title.String = "a_{d} (mm/ms^{2})"
@@ -191,8 +193,8 @@ ylabel('a_{d} (mm/ms^{2})')
 title('Acceleration vs Velocity')
 
 %write to csv
-writematrix([xsForHeatMap; accVsPosForPlot]', strcat('MoleculeMOTTrials/AccelVsPos', data_timestamp, '.csv'));
-writematrix([vsForHeatMap; accVsVelForPlot']', strcat('MoleculeMOTTrials/AccelVsVel', data_timestamp, '.csv'));
+%writematrix([xsForHeatMap; accVsPosForPlot]', strcat('MoleculeMOTTrials/AccelVsPos', data_timestamp, '.csv'));
+%writematrix([vsForHeatMap; accVsVelForPlot']', strcat('MoleculeMOTTrials/AccelVsVel', data_timestamp, '.csv'));
 
 
 [~,minCol] = min(abs(sortedPos+xMaxToInt));
@@ -202,7 +204,7 @@ writematrix([vsForHeatMap; accVsVelForPlot']', strcat('MoleculeMOTTrials/AccelVs
 meanExcPop = mean(mean(excitedPopFull(minRow:maxRow,minCol:maxCol)));
 
 
-
+%{
 %sim trap dynamics
 maxTime=40;
 gam = molecule.gam;
@@ -272,10 +274,11 @@ title('Particle Trajectory for Captured Molecule in MOT for 100 ms');
 legend('Location', 'best');
 
 %write to csv
-writematrix(ps2, strcat('MoleculeMOTTrials/MOTTrajectoryNoScatter', data_timestamp, '.csv'));
-writematrix([r; v]', strcat('MoleculeMOTTrials/MOTTrajectoryYesScatter', data_timestamp, '.csv'));
+%writematrix(ps2, strcat('MoleculeMOTTrials/MOTTrajectoryNoScatter', data_timestamp, '.csv'));
+%writematrix([r; v]', strcat('MoleculeMOTTrials/MOTTrajectoryYesScatter', data_timestamp, '.csv'));
 
 %}
 % Save the figure as a 300 DPI image
 %saveas(gcf, 'particle_trajectory_MOT.png');
 %print(gcf, 'particle_trajectory_MOT', '-dpng', '-r300'); % 300 DPI
+%}
