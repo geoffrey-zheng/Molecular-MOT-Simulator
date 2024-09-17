@@ -5,6 +5,7 @@ if moleculeName == "CaF"
     molecule.kB = 2*pi/531e-9;
     molecule.gam = 2*pi*8.3e6;
     molecule.mass = 59*1.67e-27;
+    molecule.kRepump = 2*pi/628e-9;
 
 
 elseif moleculeName == "CaOH"
@@ -24,6 +25,7 @@ elseif moleculeName == "SrF"
     molecule.kB = 2*pi/579e-9;
     molecule.gam = 2*pi*6.63e6;
     molecule.mass = 107*1.67e-27;
+    molecule.kRepump = 2*pi/685e-9;
 
 elseif moleculeName == "SrOH"
     molecule.kA = 2*pi/688e-9;

@@ -1,17 +1,14 @@
-clear all;
-close all;
-
 colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
     [0.6;0.6;0.3],[0.6;0.3;0.6],[0.3;0.6;0.6],[0.4;0.4;0.8],[0.4;0.8;0.4],[0.8;0.4;0.4],[0.5;0.5;0.5],[0.9;0.2;0.1],...
     [0.2;0.4;0.7],[0.4;0.4;0.0],[0.0;0.4;0.2],[0.2;0.0;0.4],[0.0;0.0;0.0],[0.8;0.8;0.8]];
 
 simTrapDynamics =1; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
-moleculeName = "SrF";
+moleculeName = "CaF";
 molecule = def_molecule(moleculeName);
 vib_repump = 0; %1 if vibrational repump used, 0 otherwise
 bfield_grad = "8.0"; %b-field gradient used
-num_lasers_used = "5"; %number of lasers used in MOT
-data_timestamp = "20240911_0927";
+num_lasers_used = "4"; %number of lasers used in MOT
+data_timestamp = "20240913_1906";
 base_folder = "saveData/";
 if vib_repump == 0
     dataFolder = strcat(base_folder, moleculeName, "RedMOTbFieldSettingThreeDBGradGPerCM", bfield_grad, "ForceThreeDNumLasers", num_lasers_used, "Date", data_timestamp);
@@ -73,6 +70,7 @@ for i=1:length(vsToTryForCapture)
     end
 end
 
+capVel = currV-0.2;
 
 %{
 % Plot multiple phase space trajectories on same plot
@@ -117,14 +115,14 @@ print('HighDPIPlot', '-dpng', '-r300'); % Saves as 'HighDPIPlot.png'
 
 
 %plot the highest value of v for which we have capture (evolve out to t=100 ms)
-[ts2,ps2] = ode23(diffEqVals,[0 100],[min(sortedPos);currV-1]);
+[ts2,ps2] = ode23(diffEqVals,[0 100],[min(sortedPos);currV-0.2]);
 figure(1);
 plot(ps2(:,1),ps2(:,2),'LineWidth',2);
 xlabel('d (mm)', fontsize=12);
 ylabel('v_{d} (m/s)', fontsize=12);
-title(strcat('Molecule Trajectory for v_{Cap}=',num2str(currV-0.1),' m/s'), fontsize=14)
-
-writematrix(C, strcat('MoleculeMOTTrials/CaptureVelocityTrajectory', data_timestamp, '.csv'));
+title(strcat('Molecule Trajectory for v_{Cap}=',num2str(currV-0.2),' m/s'), fontsize=14)
+%write to csv
+%writematrix(ps2, strcat('MoleculeMOTTrials/CaptureVelocityTrajectory', data_timestamp, '.csv'));
 
 %{
 %plot lower velocity trajectories as well, and for 50 ms instead of 20 ms
@@ -167,6 +165,7 @@ imagesc(xsForHeatMap,vsForHeatMap,heatMap)
 colorbar
 xlabel('d (mm)');
 ylabel('v_{d} (m/s)')
+title('Heat Map of MOT Dynamics, CaF molecule')
 xlim([min(sortedPos) max(sortedPos)])
 h=colorbar;
 h.Title.String = "a_{d} (mm/ms^{2})"
@@ -193,11 +192,9 @@ xlabel('v_{d} (m/s)');
 ylabel('a_{d} (mm/ms^{2})')
 title('Acceleration vs Velocity')
 
-D = [xsForHeatMap, accVsPosForPlot];
-writematrix(D, strcat('MoleculeMOTTrials/AccelVsPos', data_timestamp, '.csv'));
-
-F = [vsForHeatMap,accVsVelForPlot'];
-writematrix(D, strcat('MoleculeMOTTrials/AccelVsVel', data_timestamp, '.csv'));
+%write to csv
+%writematrix([xsForHeatMap; accVsPosForPlot]', strcat('MoleculeMOTTrials/AccelVsPos', data_timestamp, '.csv'));
+%writematrix([vsForHeatMap; accVsVelForPlot']', strcat('MoleculeMOTTrials/AccelVsVel', data_timestamp, '.csv'));
 
 
 [~,minCol] = min(abs(sortedPos+xMaxToInt));
@@ -208,10 +205,11 @@ meanExcPop = mean(mean(excitedPopFull(minRow:maxRow,minCol:maxCol)));
 
 
 
-%sim trap dynamics
+%get temperature and rms size
 maxTime=40;
 gam = molecule.gam;
 kA = molecule.kA;
+kRepump = molecule.kRepump;
 mass = molecule.mass;
 hbar = 1.05e-34;
 kb = 1.38e-23;
@@ -220,10 +218,15 @@ if simTrapDynamics==1
     %     scatterRate = scatterRateData(11,3).*gamSrF;
     scatterRate = meanExcPop*gam*1e-3;%in 1/ms
     tKick = 1/scatterRate;
-    v(1) = currV-3;%mm/ms
-    r(1) = -7;%mm
+    v(1) = 1;%mm/ms
+    r(1) = 1;%mm
     vKick = hbar*kA/mass;
     for i=1:round(maxTime/tKick)
+        if mod(i,50)==0
+            vKick = hbar * kRepump / mass;
+        else
+            vKick = hbar * kA / mass;
+        end
         randPhi1 = 2*pi*rand;
         randPhi2 = 2*pi*rand;
         v(i+1) = v(i)+vKick*(cos(randPhi1)+cos(randPhi2))+oneAxisAccel(r(i),v(i))*tKick;
@@ -258,6 +261,11 @@ r(1) = 1; % mm
 vKick = hbar * kA / mass;
 
 for i = 1:round(maxTime / tKick)
+    if mod(i,50)==0
+        vKick = hbar * kRepump / mass;
+    else
+        vKick = hbar * kA / mass;
+    end
     randPhi1 = 2 * pi * rand;
     randPhi2 = 2 * pi * rand;
     v(i + 1) = v(i) + vKick * (cos(randPhi1) + cos(randPhi2)) + oneAxisAccel(r(i), v(i)) * tKick;
@@ -275,6 +283,11 @@ title('Particle Trajectory for Captured Molecule in MOT for 100 ms');
 
 % Create a legend
 legend('Location', 'best');
+
+%write to csv
+%writematrix(ps2, strcat('MoleculeMOTTrials/MOTTrajectoryNoScatter', data_timestamp, '.csv'));
+%writematrix([r; v]', strcat('MoleculeMOTTrials/MOTTrajectoryYesScatter', data_timestamp, '.csv'));
+
 %}
 % Save the figure as a 300 DPI image
 %saveas(gcf, 'particle_trajectory_MOT.png');

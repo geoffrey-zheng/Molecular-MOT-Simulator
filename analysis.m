@@ -5,10 +5,10 @@ colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
 simTrapDynamics =1; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
 moleculeName = "SrF";
 molecule = def_molecule(moleculeName);
-vib_repump = 0; %1 if vibrational repump used, 0 otherwise
-bfield_grad = "8.0"; %b-field gradient used
-num_lasers_used = "5"; %number of lasers used in MOT
-data_timestamp = "20240912_1128";
+vib_repump = 1; %1 if vibrational repump used, 0 otherwise
+bfield_grad = "8.8"; %b-field gradient used
+num_lasers_used = "9"; %number of lasers used in MOT
+data_timestamp = "20240911_2215";
 base_folder = "saveData/";
 if vib_repump == 0
     dataFolder = strcat(base_folder, moleculeName, "RedMOTbFieldSettingThreeDBGradGPerCM", bfield_grad, "ForceThreeDNumLasers", num_lasers_used, "Date", data_timestamp);
@@ -122,7 +122,7 @@ xlabel('d (mm)', fontsize=12);
 ylabel('v_{d} (m/s)', fontsize=12);
 title(strcat('Molecule Trajectory for v_{Cap}=',num2str(currV-0.2),' m/s'), fontsize=14)
 %write to csv
-writematrix(ps2, strcat('MoleculeMOTTrials/CaptureVelocityTrajectory', data_timestamp, '.csv'));
+%writematrix(ps2, strcat('MoleculeMOTTrials/CaptureVelocityTrajectory', data_timestamp, '.csv'));
 
 %{
 %plot lower velocity trajectories as well, and for 50 ms instead of 20 ms
@@ -165,7 +165,7 @@ imagesc(xsForHeatMap,vsForHeatMap,heatMap)
 colorbar
 xlabel('d (mm)');
 ylabel('v_{d} (m/s)')
-title('Heat Map of MOT Dynamics, all-blue detuning')
+title('Heat Map of MOT Dynamics, CaF molecule w/Vibrational Repump')
 xlim([min(sortedPos) max(sortedPos)])
 h=colorbar;
 h.Title.String = "a_{d} (mm/ms^{2})"
@@ -184,13 +184,17 @@ hold all;
 plot(xsForHeatMap,accVsPosForPlot,'Linewidth',2);
 xlabel('d (mm)');
 ylabel('a_{d} (mm/ms^{2})')
-title('Acceleration vs Position')
+%xlim([0 15])
+%ylim([-1 0.5])
+title('Acceleration vs Position, SrF MOT')
 figure(4);
 hold all;
 plot(vsForHeatMap,accVsVelForPlot,'LineWidth',2);
 xlabel('v_{d} (m/s)');
 ylabel('a_{d} (mm/ms^{2})')
-title('Acceleration vs Velocity')
+%xlim([0 20])
+%ylim([-5 1])
+title('Acceleration vs Velocity, SrF MOT')
 
 %write to csv
 %writematrix([xsForHeatMap; accVsPosForPlot]', strcat('MoleculeMOTTrials/AccelVsPos', data_timestamp, '.csv'));
@@ -205,10 +209,11 @@ meanExcPop = mean(mean(excitedPopFull(minRow:maxRow,minCol:maxCol)));
 
 
 %{
-%sim trap dynamics
+%get temperature and rms size
 maxTime=40;
 gam = molecule.gam;
 kA = molecule.kA;
+kRepump = molecule.kRepump;
 mass = molecule.mass;
 hbar = 1.05e-34;
 kb = 1.38e-23;
@@ -217,10 +222,15 @@ if simTrapDynamics==1
     %     scatterRate = scatterRateData(11,3).*gamSrF;
     scatterRate = meanExcPop*gam*1e-3;%in 1/ms
     tKick = 1/scatterRate;
-    v(1) = currV-3;%mm/ms
-    r(1) = -7;%mm
+    v(1) = 1;%mm/ms
+    r(1) = 1;%mm
     vKick = hbar*kA/mass;
     for i=1:round(maxTime/tKick)
+        if mod(i,50)==0
+            vKick = hbar * kRepump / mass;
+        else
+            vKick = hbar * kA / mass;
+        end
         randPhi1 = 2*pi*rand;
         randPhi2 = 2*pi*rand;
         v(i+1) = v(i)+vKick*(cos(randPhi1)+cos(randPhi2))+oneAxisAccel(r(i),v(i))*tKick;
@@ -255,6 +265,11 @@ r(1) = 1; % mm
 vKick = hbar * kA / mass;
 
 for i = 1:round(maxTime / tKick)
+    if mod(i,50)==0
+        vKick = hbar * kRepump / mass;
+    else
+        vKick = hbar * kA / mass;
+    end
     randPhi1 = 2 * pi * rand;
     randPhi2 = 2 * pi * rand;
     v(i + 1) = v(i) + vKick * (cos(randPhi1) + cos(randPhi2)) + oneAxisAccel(r(i), v(i)) * tKick;
