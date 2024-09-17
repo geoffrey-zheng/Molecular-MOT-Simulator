@@ -5,10 +5,10 @@ colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
 simTrapDynamics =1; %change to 1 if you want to simulate particle trajectory, with random photon scatter, to get 'true' size and temperature
 moleculeName = "SrF";
 molecule = def_molecule(moleculeName);
-vib_repump = 1; %1 if vibrational repump used, 0 otherwise
+vib_repump = 0; %1 if vibrational repump used, 0 otherwise
 bfield_grad = "8.8"; %b-field gradient used
-num_lasers_used = "9"; %number of lasers used in MOT
-data_timestamp = "20240911_2215";
+num_lasers_used = "5"; %number of lasers used in MOT
+data_timestamp = "20240910_2054";
 base_folder = "saveData/";
 if vib_repump == 0
     dataFolder = strcat(base_folder, moleculeName, "RedMOTbFieldSettingThreeDBGradGPerCM", bfield_grad, "ForceThreeDNumLasers", num_lasers_used, "Date", data_timestamp);
