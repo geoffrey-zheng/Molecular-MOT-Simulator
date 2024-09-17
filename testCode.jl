@@ -153,7 +153,7 @@ sidebandAmps = [0.,0.,0.,0.,0.,0.,0.,0.,44.];
 
 #5D) red XA 3D 5-laser MOT params (for SrF-type)
 
-s0 = [10,20,10,31.3,8.7]./1.0; #halved the saturation intensity
+s0 = [10,20,10,31.3,8.7]./1.0; #normal of the saturation intensity
 detunings=[0,0,0,0,0];#not used here, just write actual laser energies
 laserEnergy = [-1.1,-9.8,-18.6,-26.8,-20.8];
 polSign = [1,1,1,-1,-1];
