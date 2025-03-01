@@ -3,8 +3,10 @@ const lamB=579e-9;
 const lamRepump = 685e-9;
 const v1BranchingRatioA = 1/50;#ratio of population decay from A\pi,v=0 into X\Sigma,v=1
 const v1BranchingRatioB = 3.866e-3;#ratio of population decay from B\Sigma,v=0 into X\Sigma,v=1
-const gam = 2 * pi * 6.63e6;#linewidth (happens to be same for B and A).  Haven't figure out a good way to implement differing gamma in bichromatic traps.  
-const normalizedBohrMag = 0.2114; #\mu_{B}/\hbar\Gamma in units 1/Gauss
+#const gam = 2 * pi * 6.63e6;#linewidth for X-A transition (in TKL code, he just assumed same Gamma for X-A and X-B for simplicity)
+const gam = 2 * pi * 5.3e6; #linewidth for X-B transition
+#const normalizedBohrMag = 0.2114; #\mu_{B}/\hbar\Gamma in units 1/Gauss for X-A transition
+const normalizedBohrMag = 0.2641; #\mu_{B}/\hbar\Gamma in units 1/Gauss for X-B transition
 const mass = (88 + 19) * 1.67e-27;#mass of SrF
 const a = 0.888;#j mixing terms a and b, see john barry thesis chapt 2
 const b = sqrt(1 - a^2);
@@ -15,6 +17,8 @@ const stateEnergiesExcited = [0.0,-2.0];#Energy of F=0 relative to "0" (F=1).  E
 const kA = 2 * pi / lamA; #wavenumber
 const kB = 2 * pi / lamB;
 const kRepump = 2 * pi / lamRepump;
-const velFactor = (gam/kA);
+#const velFactor = (gam/kA);
+const velFactor = (gam/kB); #for X-B transition for slowing
 const hbar=1.05e-34;
-const accelFactor = (1e-3*hbar*kA*gam/mass);#normalized force units in program are 1e-3\hbar*k*\gam.  So, the factor converts this to m/s^2
+#const accelFactor = (1e-3*hbar*kA*gam/mass);#normalized force units in program are 1e-3\hbar*k*\gam.  So, the factor converts this to m/s^2
+const accelFactor = (1e-3*hbar*kB*gam/mass);#for X-B transition

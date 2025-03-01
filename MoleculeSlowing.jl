@@ -14,16 +14,16 @@ saveInRealUnits = 1;#if 1, save vel+accel in m/s, mm/ms^2.  If 0, save in normal
 saveData=1;#if you want to save the data
 
 if vib_repump == 1
-    saveDataFolderTag = "SrFRedMOTVibRepump"; #If you want to put anything additional in "savefoldername" to tag it, see variable folderString after lasers are declared.
+    saveDataFolderTag = "SrFWhiteLightSlowingVibRepump"; #If you want to put anything additional in "savefoldername" to tag it, see variable folderString after lasers are declared.
 else
-    saveDataFolderTag = "SrFRedMOT"; #If you want to put anything additional in "savefoldername" to tag it, see variable folderString after lasers are declared.
+    saveDataFolderTag = "SrFWhiteLightSlowing"; #If you want to put anything additional in "savefoldername" to tag it, see variable folderString after lasers are declared.
 end
 addHeaders=1;
 
 #3) Non Laser Detuning/Pol Simulation Variables (B-field, beam-waist etc.)
-bGradReal = 8.0;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
+bGradReal = 5;# in units Gauss/cm.  if "Static", this becomes the static field, in Gauss
 waistInMM = 7;#only used if polType is 3D.  Handles finite MOT beam waists
-numTrialsPerValueSet = 50;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
+numTrialsPerValueSet = 2;#number of trials per set of values (displacementsInMM,userSpeeds,longSpeeds)
 velDirRelToR = 0;#-1 will choose random values for direction of v,r.  0 will force them to be same direction. 1 forces orthogonal.  2 forces opposite.
 forceXY=1; #if '1', will force v, r to go along (x+y)/sqrt(2).  Simulates slowing/trapping of molecules moving along slowing axis in tandem with velDirToR = 0
 if velDirRelToR==-1
@@ -40,10 +40,10 @@ vRound = 0.02;#nearest normalized unit to round all speeds to.  Simulation will 
 #4) User choices for what displacements from either origin (if 3D) or else z-axis (if 2D) and speeds
 #displacements will always be in millimeters, user speeds always in normalized units (for SrF, 1 normalized unit is roughly 4.4 m/s)
 
-longSpeeds = 32; # doesn't matter for 3D sims, sets vel to 140 m/s (e.g., longitudinal velocity from source) for 2D MOT/tranverse cooling 
+#longSpeeds = 32; # doesn't matter for 3D sims, sets vel to 140 m/s (e.g., longitudinal velocity from source) for 2D MOT/tranverse cooling 
 
 #4A) parameters for quick test of restoring force
-
+#=
 #displacementsInMM = [0.5,1.5,3.0,4.5,6.0,7.5];
 displacementsInMM = [0.5,1.5,3.0,4.5,6.0,7.5,9.0,10.5,12,13.5,15]; #for SrF case
 #displacementsInMM = [0.1];
@@ -53,7 +53,7 @@ userSpeeds = [-5,-4,-3,-2,-1,-0.75,-0.5,-0.25,-.1,-.05,.05,.1,.25,.5,.75,1,2,3,4
 #userSpeeds = [-4,-3.5,-3,-2.5,-2,-1.5,-1,-.8,-.6,-.4,-.2,-.1,-.05,.05,.1,.2,.4,.6,.8,1,1.5,2,2.5,3,3.5,4];#new values for SrF
 forceProfile = "ThreeD";#either "ThreeD", (forces calculated are (f\dot r)/|r|, (f\dot v)/|v|), or "TwoD" (f\dot(rx,ry,0)/|(rx,ry,0)^2, f\dot(vx,vy,0)/|(vx,vy,0)^2, and f\dotz are all calculated)
 bFieldSetting = "ThreeD";#can set to 3D quadrupole "ThreeD" (e.g. 3D-MOT"), 2D quadrupole "TwoD" (e.g. 2D-MOT") or static "Static" (2D transverse slowing primarily, could also use to simulate e.g. lambda-cooling in 3D field).  
-
+=#
 
 #4B) typical choices for simulating red-MOT
 #=
@@ -90,14 +90,14 @@ bFieldSetting = "ThreeD";
 =#
 
 #4F) typical choices for simulating slowing
-#=
-longSpeeds = [35];
-#longSpeeds = vcat([-20,-15,-10,-5,-3,-1,-.5,.5,1,2],(3:1:51));#longitudinal speed for 2d force profile (normalized units v/(gam/k))
-userSpeeds = [0.4];
+
+#longSpeeds = [35];
+longSpeeds = vcat([-20,-15,-10,-5,-3,-1,-.5,.5,1,2],(3:1:51));#longitudinal speed for 2d force profile (normalized units v/(gam/k))
+userSpeeds = [0.1];
 displacementsInMM = 0.01;
 forceProfile = "TwoD";
 bFieldSetting = "Static";
-=#
+
 
 if forceProfile == "ThreeD"
     headers = ["Speed" "av" "del_av" "ar"  "del_ar" "PF1Down" "PF0" "PF1Up" "PF2" "PExc"];
@@ -152,7 +152,7 @@ sidebandAmps = [0.,0.,0.,0.,0.,0.,0.,0.,44.];
 =#
 
 #5D) red XA 3D 5-laser MOT params (for SrF-type)
-
+#=
 s0 = [10,20,10,31.3,8.7]./1.0; #normal of the saturation intensity
 detunings=[0,0,0,0,0];#not used here, just write actual laser energies
 laserEnergy = [-1.1,-9.8,-18.6,-26.8,-20.8];
@@ -161,7 +161,7 @@ whichTransition = ["XA","XA","XA","XA","XA"];#
 polType = ["3D","3D","3D","3D","3D"];
 sidebandFreqs = [0.,0.,0.,0.,0.];
 sidebandAmps = [0.,0.,0.,0.,0.];
-
+=#
 
 #5D0) red XA 3D 5-laser MOT params (for SrF-type) INCLUDING VIBRATIONAL REPUMP
 #=
@@ -347,7 +347,7 @@ sidebandFreqs = [0.,0.];
 sidebandAmps = [0.,0.];
 =#
 
-#5G) Slowing with push
+#5G) Slowing with push (no vibrational branching)
 #=
 s0 = [280.,35.].*1.0;
 laserEnergy = [-40.,-13.];
@@ -358,15 +358,26 @@ sidebandFreqs = [0.6,6.5];
 sidebandAmps = [44.,2.5];
 =#
 
-#5H) Slowing without push
-#=
-s0 = [280.];
-laserEnergy = [-40.];
+#5H) Slowing without push (no vibrational branching)
+
+s0 = [144.];
+laserEnergy = [-50.];
 polSign = [1];#doesn't matter here
 whichTransition = ["XB"];
 polType = ["Slower"];
 sidebandFreqs = [0.6];#units of \Gamma
-sidebandAmps = [44.];#radians
+sidebandAmps = [44.];#radians. 2.5 rad is enough to null out the carrier.
+
+
+#5I) Slowing with vibrational branching, no push
+#=
+s0 = [280., 35.];
+laserEnergy = [-40., -40.];
+polSign = [1,1];#doesn't matter here
+whichTransition = ["XB", "XARepump"];
+polType = ["Slower", "Slower"];
+sidebandFreqs = [0.6,6.5];#units of \Gamma
+sidebandAmps = [44.,2.5];#radians. 2.5 rad is enough to null out the carrier.
 =#
 
 checkErrors(bFieldSetting,forceProfile,whichTransition,polType);

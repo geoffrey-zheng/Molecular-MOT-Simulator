@@ -1,0 +1,96 @@
+colors = [[0.5;0.2;0.8],[0.4;0.7;0.8],[0.8;0.5;0.2],[0.5;0.7;0.2],...
+    [0.6;0.6;0.3],[0.6;0.3;0.6],[0.3;0.6;0.6],[0.4;0.4;0.8],[0.4;0.8;0.4],[0.8;0.4;0.4],[0.5;0.5;0.5],[0.9;0.2;0.1],...
+    [0.2;0.4;0.7],[0.4;0.4;0.0],[0.0;0.4;0.2],[0.2;0.0;0.4],[0.0;0.0;0.0],[0.8;0.8;0.8]];
+
+moleculeName = "SrF";
+molecule = def_molecule(moleculeName);
+vib_repump = 0; %1 if vibrational repump used, 0 otherwise
+bfield = "5"; %static b-field used
+num_lasers_used = "1"; %number of lasers used in WLS. 1 for WLS no repump, 2 for WLS w/repump OR WLS no repump + push, 3 for WLS w/repump + push
+data_timestamp = "20250128_1903";
+base_folder = "saveData/";
+if vib_repump == 0
+    dataFolder = strcat(base_folder, moleculeName, "WhiteLightSlowingbFieldSettingStaticBFieldGauss", bfield, "ForceTwoDNumLasers", num_lasers_used, "Date", data_timestamp);
+else
+    dataFolder = strcat(base_folder, moleculeName, "WhiteLightSlowingVibRepumpbFieldSettingStaticBFieldGauss", bfield, "ForceTwoDNumLasers", num_lasers_used, "Date", data_timestamp);
+end
+
+pos = {'0.01'};
+
+for i=1:length(pos)
+    posForPlot(i) = str2num(pos{i});
+end
+
+testFile = strcat(dataFolder,'/forcevsSpeedDisplacement',pos{1},'MMSameDir.dat');
+testData = readtable(testFile);
+
+LongSpeeds = zeros(size(testData, 1),length(pos));
+azs = zeros(size(testData,1),length(pos));
+excitedPop = zeros(size(testData,1),length(pos));
+for i=1:length(pos)
+    currFile = strcat(dataFolder,'/forcevsSpeedDisplacement',pos{i},'MMSameDir.dat');
+    currData = readtable(currFile);
+    %vels = currData.Speed;
+    LongSpeeds(:,i) = currData.LongSpeed;
+    azs(:,i) = currData.az/1e3;
+    excitedPop(:,i) = currData.PExc;
+end
+
+
+% Filter out data where LongSpeeds <= 0
+validIdx = LongSpeeds > 0;
+azs = azs(validIdx);
+LongSpeeds = LongSpeeds(validIdx);
+
+% Sort the data for proper interpolation
+[LongSpeedsSorted, sortIdx] = sort(LongSpeeds);
+azsSorted = azs(sortIdx);
+
+% Perform 1D interpolation
+LongSpeedsInterp = linspace(min(LongSpeedsSorted), max(LongSpeedsSorted), 200); % Fine grid
+azsInterp = interp1(LongSpeedsSorted, azsSorted, LongSpeedsInterp, 'spline'); % Spline interpolation
+
+% Plot the data points and the interpolation
+figure(1);
+plot(LongSpeeds, azs, 'o', 'DisplayName', 'Data Points'); % Data points
+hold on;
+plot(LongSpeedsInterp, azsInterp, '-', 'LineWidth', 2, 'DisplayName', '1D Interpolation'); % Interpolated curve
+hold off;
+
+% Customize the plot
+xlabel('v_z (m/s)'); % x-axis label
+ylabel('a_z(v_z) (mm/ms^2)'); % y-axis label
+title('White Light Slowing of SrF molecules');
+legend('show', 'Location','northeastoutside');
+grid on;
+
+
+%now, given an a_z(v_z) curve, and initial condition at beam source,
+%propagate molecule motion to the MOT region and see where it ends up.
+
+slowingAccel = @(v) interp1(LongSpeedsSorted, azsSorted, v, 'spline');
+%define anonymous function for computing slowingAccel at some speed v. Note v_z is in units of m/s and a_z in units of mm/ms^2
+
+odefun = @(t,p) [p(2); slowingAccel(p(2))];
+%define system. [dx/dt=v; dv/dt=slowingAccel(v)]
+
+tspan = [0 15]; %solve from t=0 ms to t=20 ms.
+initialPos = 0.0; %in mm
+initialVel = 140.0; %in mm/ms (equivalently m/s)
+y0 = [initialPos; initialVel]; %vector of initial conditions
+
+[t, y] = ode45(odefun, tspan, y0); %solve system
+
+%plot z vs t trajectory
+figure(2);
+plot(t, y(:,1));
+xlabel('t (ms)', fontsize=12);
+ylabel('z (mm)', fontsize=12);
+title(strcat('Molecule Slowing Trajectory for v_0 =',initialVel,' m/s'), fontsize=14)
+
+%plot v vs t trajectory
+figure(3);
+plot(t, y(:,2));
+xlabel('t (ms)', fontsize=12);
+ylabel('v_z (m/s)', fontsize=12);
+
