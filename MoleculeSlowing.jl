@@ -1,5 +1,5 @@
 #0) Specify whether running on Macbook or Windows desktop
-computer_type = 0 #0 for desktop, 1 for Macbook
+computer_type = 1 #0 for desktop, 1 for Macbook
 
 #0A) Is vibrational repump being used for molecules?
 vib_repump = 0; #1 for yes, 0 for no
@@ -360,13 +360,13 @@ sidebandAmps = [44.,2.5];
 
 #5H) Slowing without push (no vibrational branching)
 
-s0 = [144.];
-laserEnergy = [-50.];
-polSign = [1];#doesn't matter here
-whichTransition = ["XB"];
-polType = ["Slower"];
-sidebandFreqs = [0.6];#units of \Gamma
-sidebandAmps = [44.];#radians. 2.5 rad is enough to null out the carrier.
+s0 = [100., 100.];
+laserEnergy = [-50., -50.];
+polSign = [1, 1];#doesn't matter here
+whichTransition = ["XB", "XB"];
+polType = ["Slower", "Slower"];
+sidebandFreqs = [1.5, 5.];#units of \Gamma
+sidebandAmps = [2., 5.];#radians. 2.5 rad is enough to null out the carrier.
 
 
 #5I) Slowing with vibrational branching, no push

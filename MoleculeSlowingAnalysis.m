@@ -6,8 +6,8 @@ moleculeName = "SrF";
 molecule = def_molecule(moleculeName);
 vib_repump = 0; %1 if vibrational repump used, 0 otherwise
 bfield = "5"; %static b-field used
-num_lasers_used = "1"; %number of lasers used in WLS. 1 for WLS no repump, 2 for WLS w/repump OR WLS no repump + push, 3 for WLS w/repump + push
-data_timestamp = "20250130_1837";
+num_lasers_used = "2"; %number of lasers used in WLS. 1 for WLS no repump, 2 for WLS w/repump OR WLS no repump + push, 3 for WLS w/repump + push
+data_timestamp = "20250311_2259";
 base_folder = "saveData/";
 if vib_repump == 0
     dataFolder = strcat(base_folder, moleculeName, "WhiteLightSlowingbFieldSettingStaticBFieldGauss", bfield, "ForceTwoDNumLasers", num_lasers_used, "Date", data_timestamp);
@@ -76,10 +76,10 @@ odefun = @(t,p) [p(2); slowingAccel(p(2))];
 
 
 %initial parameters
-tspan = [0 8]; %solve from t=0 ms to t=20 ms.
+tspan = [0 20]; %solve from t=0 ms to t=20 ms.
 initialPos = 0.0; %in mm
 initialVel = 140; %in mm/ms (equivalently m/s)
-slowingLength = 1340.0; % in mm
+slowingLength = 700.0; % in mm
 y0 = [initialPos; initialVel]; %vector of initial conditions
 
 
